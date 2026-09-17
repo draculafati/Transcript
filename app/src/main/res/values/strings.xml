@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Transcript</string>
+    <string name="accessibility_service_description">Transcript uses accessibility services to extract and translate text directly from active apps with zero battery overhead.</string>
+</resources>

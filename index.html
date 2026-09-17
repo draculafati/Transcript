@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transcript - Windows Interactive Testbed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    .animate-pulse-glow {
+      animation: pulse-glow 1.5s infinite ease-in-out;
+    }
+    body {
+      background: #0d0f12;
+      color: #f3f4f6;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center select-none">
+  
+  <div class="w-full max-w-5xl bg-neutral-900/90 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-neutral-800">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"></div>
+          <h1 class="font-bold text-xl sm:text-2xl text-white tracking-tight">Transcript — Windows Local Testbed</h1>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">20+ Languages Supported</span>
+        </div>
+        <p class="text-xs sm:text-sm text-neutral-400 mt-1.5">Live simulation with expanded multilingual engine: English, Korean, Japanese, Chinese, Urdu, Hindi, Spanish & more</p>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-2.5">
+        <button id="btn-toggle-screen" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition flex items-center gap-2">
+          <span>🌙</span> <span id="lbl-screen-btn">Simulate Screen OFF</span>
+        </button>
+        <button id="btn-reset-pos" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition">
+          Reset HUD
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-start">
+      
+      <!-- Phone Simulation Frame (Left Side) -->
+      <div class="lg:col-span-7 flex justify-center">
+        <div id="phone-frame" class="relative w-[340px] h-[640px] bg-black rounded-[46px] border-[7px] border-neutral-700 shadow-2xl overflow-hidden flex flex-col transition-all duration-300">
+          
+          <!-- Screen Off Blackout Overlay (ADR-0002) -->
+          <div id="screen-off-overlay" class="absolute inset-0 bg-black z-50 hidden flex flex-col items-center justify-center p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-700 flex items-center justify-center text-2xl mb-3">
+              💤
+            </div>
+            <h3 class="text-white font-bold text-sm">Display Turned OFF</h3>
+            <p class="text-xs text-neutral-400 mt-1 leading-relaxed">ADR-0002 Rule 1: Internal audio buffers & inference pipelines forcibly frozen within 100ms (0% battery drain).</p>
+            <button id="btn-wake-phone" class="mt-4 px-4 py-2 text-xs font-bold rounded-full bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-lg">
+              Wake Screen
+            </button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="h-8 bg-black/80 px-6 flex items-center justify-between text-[11px] text-white/90 z-20">
+            <span class="font-medium">02:29</span>
+            <div class="w-20 h-4 bg-black rounded-full mx-auto -mt-1"></div>
+            <div class="flex items-center gap-1.5">
+              <span>5G</span>
+              <span>98%</span>
+              <div class="w-4 h-2 border border-white/80 rounded-xs p-0.5"><div class="h-full bg-emerald-400 rounded-2xs w-full"></div></div>
+            </div>
+          </div>
+
+          <!-- Simulated Third-Party App Environment (YouTube / Reels) -->
+          <div class="relative flex-1 bg-neutral-950 flex flex-col overflow-hidden">
+            <!-- Video Player Area -->
+            <div class="h-52 bg-gradient-to-br from-indigo-950 via-slate-900 to-black relative flex items-center justify-center border-b border-neutral-800">
+              <div class="absolute inset-0 bg-[radial-gradient(#4338ca_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
+              
+              <!-- Video content info -->
+              <div class="text-center z-10 p-4">
+                <div class="inline-flex p-3 rounded-full bg-white/10 backdrop-blur-md mb-2 shadow-inner">
+                  <span id="video-play-icon" class="text-2xl">▶</span>
+                </div>
+                <p class="text-white text-xs font-bold">Tech Keynote: Next-Gen Neural Hardware</p>
+                <p class="text-neutral-400 text-[10px] mt-0.5">Capturing 16kHz internal device media audio...</p>
+              </div>
+
+              <!-- Audio Energy Waves (Silero VAD Gating Activity) -->
+              <div id="vad-waveform" class="absolute bottom-2 inset-x-6 flex items-center justify-center gap-1.5 h-6 opacity-0 transition-opacity">
+                <span class="w-1 bg-emerald-400 rounded-full h-2 animate-bounce"></span>
+                <span class="w-1 bg-emerald-400 rounded-full h-5 animate-bounce [animation-delay:0.1s]"></span>
+                <span class="w-1 bg-emerald-400 rounded-full h-3 animate-bounce [animation-delay:0.2s]"></span>
+                <span class="w-1 bg-emerald-400 rounded-full h-6 animate-bounce [animation-delay:0.15s]"></span>
+                <span class="w-1 bg-emerald-400 rounded-full h-4 animate-bounce [animation-delay:0.3s]"></span>
+                <span class="w-1 bg-emerald-400 rounded-full h-2 animate-bounce [animation-delay:0.25s]"></span>
+              </div>
+            </div>
+
+            <!-- Native App View Hierarchy (Accessibility Tree Source) -->
+            <div class="flex-1 p-4 bg-neutral-950 text-neutral-200 overflow-hidden flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">Y</div>
+                  <div>
+                    <p class="text-xs font-bold text-white">Silicon Insight</p>
+                    <p class="text-[10px] text-neutral-500">1.2M subscribers</p>
+                  </div>
+                </div>
+
+                <!-- Text Paragraphs (Readable via AccessibilityService) -->
+                <div class="space-y-2 bg-neutral-900/80 p-3 rounded-xl border border-neutral-800 text-[11px] leading-relaxed">
+                  <p class="font-medium text-neutral-200">"This neural engine achieves 35 trillion operations per second with zero thermal throttling on mobile devices."</p>
+                  <p class="text-neutral-400 text-[10px]">Zero-OCR native tree extraction reads this text directly from memory with 0ms delay!</p>
+                </div>
+              </div>
+
+              <div class="text-center text-[10px] text-neutral-500 pb-2">
+                Double tap floating pill or tap 🔤 to translate screen text
+              </div>
+            </div>
+
+            <!-- FLOATING COMPOSE HUD CAPSULE (Draggable) -->
+            <div id="floating-capsule" 
+                 class="absolute z-40 cursor-grab active:cursor-grabbing transition-shadow"
+                 style="top: 190px; left: 24px;">
+              
+              <!-- Collapsed Edge Pill View -->
+              <div id="pill-collapsed" class="hidden bg-[#121212]/95 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-2 hover:border-emerald-500/40 transition">
+                <span id="pill-dot-col" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow"></span>
+                <span class="text-white font-bold text-xs tracking-wider">T</span>
+                <span id="pill-lang-tag" class="text-[9px] text-emerald-400 font-semibold uppercase">KO</span>
+              </div>
+
+              <!-- Expanded HUD Card View -->
+              <div id="pill-expanded" class="w-[285px] bg-[#121212]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-3 shadow-2xl">
+                <!-- Capsule Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                  <div class="flex items-center gap-2">
+                    <span id="pill-dot-exp" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow"></span>
+                    <span id="pill-status-text" class="text-[10px] font-bold text-emerald-400 tracking-wider uppercase">LISTENING</span>
+                    <span id="hud-badge-lang" class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold uppercase">KO</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button id="btn-hud-screen" title="Translate on-screen text" class="w-6 h-6 rounded-md hover:bg-white/10 flex items-center justify-center text-xs text-neutral-300">
+                      🔤
+                    </button>
+                    <button id="btn-hud-pause" title="Pause audio capture" class="w-6 h-6 rounded-md hover:bg-white/10 flex items-center justify-center text-xs text-white">
+                      ⏸
+                    </button>
+                    <button id="btn-hud-collapse" title="Dock as compact pill" class="w-6 h-6 rounded-md hover:bg-white/10 flex items-center justify-center text-xs text-neutral-300">
+                      —
+                    </button>
+                    <button id="btn-hud-close" title="Hide HUD" class="w-6 h-6 rounded-md hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs">
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Subtitle Content Stream -->
+                <div class="pt-2.5 pb-1">
+                  <p id="hud-subtitle-text" class="text-xs text-neutral-100 font-normal leading-relaxed min-h-[38px]">
+                    Ready — speech & screen translation will stream here...
+                  </p>
+                  <div class="flex items-center justify-between text-[9px] text-neutral-400 mt-2">
+                    <span id="hud-mode-label">Mode: Audio ASR (Whisper)</span>
+                    <span id="hud-latency-label" class="text-emerald-400 font-mono">⚡ 280ms latency</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Bottom Navigation Bar -->
+          <div class="h-7 bg-black flex items-center justify-center">
+            <div class="w-32 h-1 bg-white/40 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls & Architecture Dashboard (Right Side) -->
+      <div class="lg:col-span-5 space-y-5">
+        
+        <!-- Live Test Drivers -->
+        <div class="bg-neutral-950 border border-neutral-800 rounded-2xl p-5 shadow-lg">
+          <h2 class="text-xs font-bold text-white uppercase tracking-wider mb-3.5 flex items-center gap-2">
+            <span>🎮</span> Live Pipeline Simulator
+          </h2>
+
+          <div class="space-y-2.5">
+            <button id="btn-sim-speech" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center justify-center gap-2.5 shadow-md">
+              <span>🗣️</span> <span>Simulate Spoken Audio (YouTube Video)</span>
+            </button>
+
+            <button id="btn-sim-screen" class="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition flex items-center justify-center gap-2.5 shadow-md">
+              <span>🔤</span> <span>Simulate Tap-to-Translate (Accessibility)</span>
+            </button>
+
+            <button id="btn-sim-silence" class="w-full py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs text-neutral-200 transition flex items-center justify-center gap-2">
+              <span>🔇</span> <span>Simulate Silence (Test Silero VAD Gating)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Language & Hardware Settings -->
+        <div class="bg-neutral-950 border border-neutral-800 rounded-2xl p-5 shadow-lg">
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider mb-3.5 flex items-center gap-2">
+            <span>⚙️</span> Multilingual Engine Settings
+          </h3>
+
+          <div class="grid grid-cols-2 gap-3.5 text-xs">
+            <div>
+              <label class="block text-[11px] text-neutral-400 mb-1.5 font-medium">Target Language</label>
+              <select id="sel-target-lang" class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-2 text-xs text-white outline-none focus:border-emerald-500 font-medium">
+                <optgroup label="Popular Languages">
+                  <option value="ko" selected>Korean (한국어)</option>
+                  <option value="en">English (Original / Subtitles)</option>
+                  <option value="ja">Japanese (日本語)</option>
+                  <option value="zh">Chinese (中文)</option>
+                  <option value="hi">Hindi (हिन्दी)</option>
+                  <option value="ur">Urdu (اردو)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="ar">Arabic (العربية)</option>
+                  <option value="ru">Russian (Русский)</option>
+                  <option value="pt">Portuguese (Português)</option>
+                  <option value="it">Italian (Italiano)</option>
+                  <option value="tr">Turkish (Türkçe)</option>
+                  <option value="vi">Vietnamese (Tiếng Việt)</option>
+                  <option value="bn">Bengali (বাংলা)</option>
+                  <option value="id">Indonesian (Bahasa)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-neutral-400 mb-1.5 font-medium">Hardware Acceleration</label>
+              <div class="p-2 rounded-xl bg-neutral-900 border border-neutral-700 text-[11px] font-mono text-emerald-400 font-semibold flex items-center gap-1.5">
+                <span>⚡</span> NNAPI / GPU (NPU)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Architectural Telemetry -->
+        <div class="bg-neutral-950 border border-neutral-800 rounded-2xl p-5 shadow-lg text-xs space-y-2.5">
+          <h3 class="font-bold text-white uppercase tracking-wider text-[11px] mb-3 flex items-center gap-2">
+            <span>📊</span> Architectural Specs (ADR-0001 & ADR-0002)
+          </h3>
+          
+          <div class="flex justify-between py-1.5 border-b border-neutral-800/80">
+            <span class="text-neutral-400">Silero VAD State</span>
+            <span id="tele-vad" class="font-mono font-semibold text-emerald-400">Idle / Gated</span>
+          </div>
+
+          <div class="flex justify-between py-1.5 border-b border-neutral-800/80">
+            <span class="text-neutral-400">Whisper Inference</span>
+            <span id="tele-whisper" class="font-mono font-semibold text-neutral-400">Dormant (0% CPU)</span>
+          </div>
+
+          <div class="flex justify-between py-1.5 border-b border-neutral-800/80">
+            <span class="text-neutral-400">Estimated Battery Drain</span>
+            <span class="font-mono font-semibold text-emerald-400">&lt; 5.2% / hour</span>
+          </div>
+
+          <div class="flex justify-between py-1.5">
+            <span class="text-neutral-400">Screen Text Extraction</span>
+            <span class="font-mono font-semibold text-indigo-400">Zero-OCR (Accessibility Tree)</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let isListening = true;
+    let isCollapsed = false;
+    let isScreenOn = true;
+    let currentLang = 'ko';
+
+    const translations = {
+      ko: {
+        speechTrans: "이 차세대 신경망 프로세서는 초당 35조 회의 연산을 즉각 처리합니다.",
+        screenTrans: "화면 번역: AI 하드웨어 가속 — 초저전력 소모 및 발열 제로."
+      },
+      en: {
+        speechTrans: "This next-generation neural engine delivers 35 trillion operations per second.",
+        screenTrans: "Screen Text: AI Hardware Acceleration — ultra-low power consumption and zero throttling."
+      },
+      ja: {
+        speechTrans: "この次世代ニューラルプロセッサは毎秒35兆回の演算を瞬時に処理します。",
+        screenTrans: "画面翻訳: AIハードウェアアクセラレーション — 超低消費電力と発熱ゼロ。"
+      },
+      zh: {
+        speechTrans: "该下一代神经网络处理器每秒可执行35万亿次运算，性能极其卓越。",
+        screenTrans: "屏幕翻译: AI硬件加速 — 超低功耗，零发热降频。"
+      },
+      hi: {
+        speechTrans: "यह न्यूरल प्रोसेसिंग यूनिट प्रति सेकंड 35 ट्रिलियन ऑपरेशन्स प्रदान करती है।",
+        screenTrans: "स्क्रीन अनुवाद: एआई हार्डवेयर एक्सेलेरेशन — अल्ट्रा-लो पावर खपत और ज़ीरो थर्मल थ्रॉटलिंग।"
+      },
+      ur: {
+        speechTrans: "یہ جدید ترین نیورل پروسیسنگ انجن فی سیکنڈ 35 ٹریلین آپریشنز انجام دیتا ہے۔",
+        screenTrans: "اسکرین ترجمہ: AI ہارڈ ویئر ایکسلریشن — انتہائی کم بیٹری کا خرچ اور زیرو ہیٹنگ۔"
+      },
+      es: {
+        speechTrans: "Esta unidad de procesamiento neuronal ofrece 35 billones de operaciones por segundo.",
+        screenTrans: "Texto en pantalla: Aceleración de hardware de IA — consumo ultrabajo y sin sobrecalentamiento."
+      },
+      fr: {
+        speechTrans: "Ce processeur neuronal de nouvelle génération exécute 35 000 milliards d'opérations par seconde.",
+        screenTrans: "Texte à l'écran: Accélération matérielle IA — consommation ultra-faible et zéro surchauffe."
+      },
+      de: {
+        speechTrans: "Dieser neuronale Prozessor der nächsten Generation liefert 35 Billionen Operationen pro Sekunde.",
+        screenTrans: "Bildschirmtext: KI-Hardwarebeschleunigung — extrem niedriger Stromverbrauch und keine Drosselung."
+      },
+      ar: {
+        speechTrans: "يوفر هذا المعالج العصبي من الجيل التالي 35 تريليون عملية في الثانية دون أي ارتفاع في الحرارة.",
+        screenTrans: "ترجمة الشاشة: تسريع الذكاء الاصطناعي للأجهزة — استهلاك طاقة منخفض للغاية."
+      },
+      ru: {
+        speechTrans: "Этот нейронный процессор нового поколения выполняет 35 триллионов операций в секунду.",
+        screenTrans: "Текст на экране: Аппаратное ускорение ИИ — сверхнизкое энергопотребление и ноль перегрева."
+      },
+      pt: {
+        speechTrans: "Este processador neural de última geração entrega 35 trilhões de operações por segundo.",
+        screenTrans: "Texto da tela: Aceleração de hardware de IA — consumo ultrabaixo de energia."
+      },
+      it: {
+        speechTrans: "Questo processore neurale di nuova generazione offre 35 trilioni di operazioni al secondo.",
+        screenTrans: "Testo dello schermo: Accelerazione hardware IA — consumo energetico bassissimo."
+      },
+      tr: {
+        speechTrans: "Bu yeni nesil nöral işlemci, saniyede 35 trilyon işlem gücü sunar.",
+        screenTrans: "Ekran Çevirisi: Yapay Zeka Donanım Hızlandırma — ultra düşük güç tüketimi."
+      },
+      vi: {
+        speechTrans: "Bộ xử lý thần kinh thế hệ mới này cung cấp 35 nghìn tỷ phép tính mỗi giây.",
+        screenTrans: "Dịch màn hình: Tăng tốc phần cứng AI — mức tiêu thụ điện năng cực thấp."
+      },
+      bn: {
+        speechTrans: "এই পরবর্তী প্রজন্মের নিউরাল প্রসেসর প্রতি সেকেন্ডে ৩৫ ট্রিলিয়ন অপারেশন সম্পাদন করে।",
+        screenTrans: "স্ক্রিন অনুবাদ: এআই হার্ডওয়্যার অ্যাক্সিলারেশন — অতি-কম ব্যাটারি ব্যবহার।"
+      },
+      id: {
+        speechTrans: "Prosesor saraf generasi berikutnya ini menghasilkan 35 triliun operasi per detik.",
+        screenTrans: "Terjemahan Layar: Akselerasi Perangkat Keras AI — konsumsi daya sangat rendah."
+      }
+    };
+
+    const capsule = document.getElementById('floating-capsule');
+    const pillCollapsed = document.getElementById('pill-collapsed');
+    const pillExpanded = document.getElementById('pill-expanded');
+    const subtitleText = document.getElementById('hud-subtitle-text');
+    const pillStatusText = document.getElementById('pill-status-text');
+    const dotExp = document.getElementById('pill-dot-exp');
+    const dotCol = document.getElementById('pill-dot-col');
+    const btnPause = document.getElementById('btn-hud-pause');
+    const btnCollapse = document.getElementById('btn-hud-collapse');
+    const btnClose = document.getElementById('btn-hud-close');
+    const btnScreenTrans = document.getElementById('btn-hud-screen');
+    const screenOffOverlay = document.getElementById('screen-off-overlay');
+    const btnToggleScreen = document.getElementById('btn-toggle-screen');
+    const btnWakePhone = document.getElementById('btn-wake-phone');
+    const lblScreenBtn = document.getElementById('lbl-screen-btn');
+    const vadWaveform = document.getElementById('vad-waveform');
+    const teleVad = document.getElementById('tele-vad');
+    const teleWhisper = document.getElementById('tele-whisper');
+    const hudLatency = document.getElementById('hud-latency-label');
+    const hudMode = document.getElementById('hud-mode-label');
+    const badgeLang = document.getElementById('hud-badge-lang');
+    const pillLangTag = document.getElementById('pill-lang-tag');
+
+    function updateLanguageBadge() {
+      badgeLang.textContent = currentLang.toUpperCase();
+      pillLangTag.textContent = currentLang.toUpperCase();
+    }
+
+    function updateHUDState() {
+      if (isCollapsed) {
+        pillCollapsed.classList.remove('hidden');
+        pillExpanded.classList.add('hidden');
+      } else {
+        pillCollapsed.classList.add('hidden');
+        pillExpanded.classList.remove('hidden');
+      }
+
+      if (isListening) {
+        dotExp.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow";
+        dotCol.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow";
+        pillStatusText.textContent = "LISTENING";
+        pillStatusText.className = "text-[10px] font-bold text-emerald-400 tracking-wider uppercase";
+        btnPause.textContent = "⏸";
+      } else {
+        dotExp.className = "w-2 h-2 rounded-full bg-red-400";
+        dotCol.className = "w-2 h-2 rounded-full bg-red-400";
+        pillStatusText.textContent = "PAUSED";
+        pillStatusText.className = "text-[10px] font-bold text-neutral-400 tracking-wider uppercase";
+        btnPause.textContent = "▶";
+      }
+      updateLanguageBadge();
+    }
+
+    btnCollapse.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isCollapsed = true;
+      updateHUDState();
+    });
+
+    pillCollapsed.addEventListener('click', () => {
+      isCollapsed = false;
+      updateHUDState();
+    });
+
+    pillCollapsed.addEventListener('dblclick', () => {
+      simulateScreenTranslation();
+    });
+
+    btnPause.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isListening = !isListening;
+      updateHUDState();
+    });
+
+    btnClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      capsule.classList.add('hidden');
+    });
+
+    document.getElementById('btn-reset-pos').addEventListener('click', () => {
+      capsule.classList.remove('hidden');
+      capsule.style.top = '190px';
+      capsule.style.left = '24px';
+      isCollapsed = false;
+      isListening = true;
+      updateHUDState();
+    });
+
+    function setScreenPower(on) {
+      isScreenOn = on;
+      if (!isScreenOn) {
+        screenOffOverlay.classList.remove('hidden');
+        lblScreenBtn.textContent = "Simulate Screen ON";
+        teleVad.textContent = "Frozen (Screen OFF)";
+        teleVad.className = "font-mono font-semibold text-neutral-500";
+        teleWhisper.textContent = "Suspended (<100ms)";
+        teleWhisper.className = "font-mono font-semibold text-neutral-500";
+        vadWaveform.style.opacity = '0';
+      } else {
+        screenOffOverlay.classList.add('hidden');
+        lblScreenBtn.textContent = "Simulate Screen OFF";
+        teleVad.textContent = "Active / Monitoring";
+        teleVad.className = "font-mono font-semibold text-emerald-400";
+        teleWhisper.textContent = "Dormant (VAD Gated)";
+        teleWhisper.className = "font-mono font-semibold text-neutral-400";
+      }
+    }
+
+    btnToggleScreen.addEventListener('click', () => setScreenPower(!isScreenOn));
+    btnWakePhone.addEventListener('click', () => setScreenPower(true));
+
+    document.getElementById('btn-sim-speech').addEventListener('click', () => {
+      if (!isScreenOn) return;
+      vadWaveform.style.opacity = '1';
+      teleVad.textContent = "Speech Energy > 0.85";
+      teleVad.className = "font-mono font-semibold text-amber-400";
+      teleWhisper.textContent = "Running (NNAPI Delegate)";
+      teleWhisper.className = "font-mono font-semibold text-emerald-400";
+      subtitleText.textContent = "Transcribing 16kHz audio...";
+      hudMode.textContent = "Mode: Audio Playback ASR";
+      hudLatency.textContent = "⚡ 280ms latency";
+
+      setTimeout(() => {
+        const langData = translations[currentLang] || translations.ko;
+        subtitleText.textContent = langData.speechTrans;
+        vadWaveform.style.opacity = '0';
+        teleVad.textContent = "Speech Window Ended";
+        teleWhisper.textContent = "Dormant (0% CPU)";
+        teleWhisper.className = "font-mono font-semibold text-neutral-400";
+      }, 700);
+    });
+
+    function simulateScreenTranslation() {
+      if (!isScreenOn) return;
+      isCollapsed = false;
+      updateHUDState();
+      
+      hudMode.textContent = "Mode: Native Accessibility Tree";
+      hudLatency.textContent = "⚡ 12ms latency (Zero OCR)";
+      subtitleText.textContent = "Reading active window nodes...";
+
+      setTimeout(() => {
+        const langData = translations[currentLang] || translations.ko;
+        subtitleText.textContent = langData.screenTrans;
+      }, 350);
+    }
+
+    btnScreenTrans.addEventListener('click', simulateScreenTranslation);
+    document.getElementById('btn-sim-screen').addEventListener('click', simulateScreenTranslation);
+
+    document.getElementById('btn-sim-silence').addEventListener('click', () => {
+      vadWaveform.style.opacity = '0';
+      teleVad.textContent = "Silence (<0.02 RMS) -> Dropped";
+      teleVad.className = "font-mono font-semibold text-neutral-400";
+      teleWhisper.textContent = "Dormant (0% CPU, 0MB RAM)";
+      teleWhisper.className = "font-mono font-semibold text-neutral-400";
+      subtitleText.textContent = "Silence / Instrumental audio suppressed. Whisper bypassed.";
+    });
+
+    document.getElementById('sel-target-lang').addEventListener('change', (e) => {
+      currentLang = e.target.value;
+      updateLanguageBadge();
+      const langData = translations[currentLang] || translations.ko;
+      subtitleText.textContent = langData.speechTrans;
+    });
+
+    // Dragging Simulation
+    let isDragging = false;
+    let startX, startY, initLeft, initTop;
+
+    capsule.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      initLeft = capsule.offsetLeft;
+      initTop = capsule.offsetTop;
+      capsule.style.transition = 'none';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      capsule.style.left = `${Math.max(10, Math.min(260, initLeft + dx))}px`;
+      capsule.style.top = `${Math.max(40, Math.min(520, initTop + dy))}px`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      capsule.style.transition = 'all 0.2s ease-out';
+    });
+
+    updateHUDState();
+  </script>
+</body>
+</html>
