@@ -10,3 +10,4 @@
 .cxx
 node_modules/
 dist/
+*.tmp

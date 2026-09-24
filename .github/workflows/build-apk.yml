@@ -7,6 +7,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,3 +43,27 @@ jobs:
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create or Update GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Transcript v1.0.0 (Latest APK Build)"
+          body: |
+            ### 🚀 Transcript v1.0.0 — Real-Time Cross-App Translator
+
+            **Real-time on-device audio & screen translation for Android with sub-300ms latency and ultra-low battery drain.**
+
+            #### 📱 Direct APK Download:
+            Download **`app-debug.apk`** below and install directly onto your Android device!
+
+            #### ✨ Key Features:
+            - **Edge AI Speech-to-Text:** Quantized Whisper INT8 accelerated via NNAPI / GPU delegates.
+            - **Zero-Battery Silence Gating:** Silero VAD gatekeeper suppresses silence and instrumental music (0% CPU when idle).
+            - **Zero-OCR Native Screen Translation:** Direct Android `AccessibilityNodeInfo` tree extraction without heavy screenshot processing.
+            - **20+ Languages:** Powered by Google ML Kit On-Device Translation (100% offline, zero cloud API fees).
+            - **Minimalist Floating HUD:** Jetpack Compose draggable edge-docking pill overlay.
+          files: app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
